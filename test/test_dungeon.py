@@ -35,25 +35,6 @@ class CellTest(unittest.TestCase):
         self.assertFalse(floor_cell.isWall())
         self.assertTrue(floor_cell.isFloor())
 
-    def test_getTexCoords(self):
-        void_cell  = dungeon.Cell.Void(x=0, y=4)
-        wall_cell  = dungeon.Cell.Wall(x=1, y=5)
-        floor_cell = dungeon.Cell.Floor(x=2, y=6)
-
-        self.assertIsNone(void_cell.getTexCoords())
-
-        wall_coords = wall_cell.getTexCoords()
-        self.assertEqual(wall_coords[0], (0.0, 0.5)) # top left
-        self.assertEqual(wall_coords[1], (1.0, 0.5)) # top right
-        self.assertEqual(wall_coords[2], (1.0, 1.0)) # bottom right
-        self.assertEqual(wall_coords[3], (0.0, 1.0)) # bottom left
-        
-        floor_coords = floor_cell.getTexCoords()
-        self.assertEqual(floor_coords[0], (0.0, 0.0)) # top left
-        self.assertEqual(floor_coords[1], (1.0, 0.0)) # top right
-        self.assertEqual(floor_coords[2], (1.0, 0.5)) # bottom right
-        self.assertEqual(floor_coords[3], (0.0, 0.5)) # bottom left
-
 
 # ---------------------------------------------------------------------
 
@@ -108,8 +89,7 @@ class DungeonTest(unittest.TestCase):
         self.assertEqual(d.mapIndex(0, 0), 0)
         self.assertEqual(d.mapIndex(1, 0), 1)
         self.assertEqual(d.mapIndex(2, 0), 2)
-        with self.assertRaises(KeyError):
-            d.mapIndex(3, 0)
+        self.assertEqual(d.mapIndex(3, 0), -1)
 
         self.assertEqual(d.mapIndex(0, 1), 3)
         self.assertEqual(d.mapIndex(1, 1), 4)
@@ -119,9 +99,9 @@ class DungeonTest(unittest.TestCase):
         d = dungeon.Dungeon()
         d.resize(3, 4)
         
-        d.set(2, 3, dungeon.Cell.Floor(x=0, y=0))
+        d[(2, 3)] = dungeon.Cell.Floor(x=0, y=0)
         
-        self.assertTrue(d.get(2, 3).isFloor())
+        self.assertTrue(d[(2, 3)].isFloor())
 
     def test_loadFromFile_saveToFile(self):
         raw = '5x3\n#####\n #..#\n#####'

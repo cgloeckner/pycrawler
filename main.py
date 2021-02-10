@@ -67,6 +67,57 @@ class Renderer(object):
 
 # ---------------------------------------------------------------------
 
+def build_dungeon_vertices(dungeon):
+    neighbor_iteration = [(-1, 0, draw.WestWallTile), (1, 0, draw.EastWallTile), (0, 1, draw.SouthWallTile), (0, -1, draw.NorthWallTile)]
+    white = (1.0, 1.0, 1.0)
+    black = (0.0, 0.0, 0.0)
+    yellow = (1.0, 1.0, 0.0)
+    
+    tiles = list()
+    for y in range(dungeon.size[1]):
+        for x in range(dungeon.size[0]):
+            c = dungeon[(x, y)]
+            if c.isWall():
+                continue
+            
+            if c.isFloor():
+                t = draw.FloorTile(3.0, 2.0)
+                t.moveTo(x * 3.0, 0.0, y * 3.0)
+                t.texture = tileset 
+                t.clip(0.0, 0.0, 1.0, 0.5)
+                tiles.append(t)
+
+            # place walls around floor/void    
+            for neighbor in neighbor_iteration:
+                newx = x + neighbor[0]
+                newy = y + neighbor[1]
+                c2 = dungeon[(newx, newy)]
+                if c2 is not None and not c2.isWall():
+                    continue
+                t = neighbor[2](3.0, 2.0)
+                t.moveTo(x * 3.0, 0.0, y * 3.0)
+                t.texture = tileset      
+                t.colorize(yellow, yellow, white, white)
+                t.clip(0.0, 0.5, 1.0, 0.5)
+                tiles.append(t)
+
+            if c.isVoid():
+                # place lower walls in void's pit
+                for neighbor in neighbor_iteration:
+                    newx = x + neighbor[0]
+                    newy = y + neighbor[1]
+                    # TODO: get --> None
+                    c2 = dungeon[(newx, newy)]
+                    if c2 is not None and c2.isVoid():
+                        continue
+                    t = neighbor[2](3.0, 2.0)
+                    t.moveTo(x * 3.0, -2.0, y * 3.0)
+                    t.texture = tileset
+                    t.colorize(white, white, black, black)  
+                    t.clip(0.0, 0.5, 1.0, 0.5)
+                    tiles.append(t)
+    return tiles            
+
 if __name__ == '__main__':
     pygame.init()
     renderer = Renderer(640, 480) 
@@ -89,61 +140,7 @@ if __name__ == '__main__':
     # demo terrain
     d = dungeon.Dungeon()
     d.loadFromFile('demo.txt')
-
-    neighbor_iteration = [(-1, 0, draw.WestWallTile), (1, 0, draw.EastWallTile), (0, 1, draw.SouthWallTile), (0, -1, draw.NorthWallTile)]
-    white = (1.0, 1.0, 1.0)
-    black = (0.0, 0.0, 0.0)
-    yellow = (1.0, 1.0, 0.0)
-    
-    tiles = list()
-    for y in range(d.size[1]):
-        for x in range(d.size[0]):
-            c = d.get(x, y)
-            if c.isWall():
-                continue
-            
-            if c.isFloor():
-                t = draw.FloorTile(3.0, 2.0)
-                t.moveTo(x * 3.0, 0.0, y * 3.0)
-                t.texture = tileset 
-                t.clip(0.0, 0.0, 1.0, 0.5)
-                tiles.append(t)
-
-            # place walls around floor/void    
-            for neighbor in neighbor_iteration:
-                newx = x + neighbor[0]
-                newy = y + neighbor[1]
-                # TODO: get --> None
-                if not d.has(newx, newy):
-                    continue
-                c2 = d.get(newx, newy)
-                if not c2.isWall():
-                    continue
-                t = neighbor[2](3.0, 2.0)
-                t.moveTo(x * 3.0, 0.0, y * 3.0)
-                t.texture = tileset      
-                t.colorize(yellow, yellow, white, white)
-                t.clip(0.0, 0.5, 1.0, 0.5)
-                tiles.append(t)
-
-            if c.isVoid():
-                # place lower walls in void's pit
-                for neighbor in neighbor_iteration:
-                    newx = x + neighbor[0]
-                    newy = y + neighbor[1]
-                    # TODO: get --> None
-                    if not d.has(newx, newy):
-                        continue
-                    c2 = d.get(newx, newy)
-                    if c2.isVoid():
-                        continue
-                    t = neighbor[2](3.0, 2.0)
-                    t.moveTo(x * 3.0, -2.0, y * 3.0)
-                    t.texture = tileset
-                    t.colorize(white, white, black, black)  
-                    t.clip(0.0, 0.5, 1.0, 0.5)
-                    tiles.append(t)
-                
+    tiles = build_dungeon_vertices(d)
 
     next_fps_update = 0
     

@@ -6,7 +6,7 @@ class Cell(object):
     def __init__(self, x, y, symbol):
         self.pos    = (x, y)
         self.symbol = symbol
-
+    
     @staticmethod
     def Void(**kwargs):
         kwargs['symbol'] = '.'
@@ -31,23 +31,6 @@ class Cell(object):
     def isFloor(self):
         return self.symbol == ' '
 
-    def getTexCoords(self):
-        """ This assumes floors on row 1 and walls on row 2, where
-        void has no texture. Also no texture variations are expected.
-        """
-        if self.isVoid():
-            return None
-        if self.isFloor():
-            y = 0.0
-        if self.isWall():
-            y = 0.5
-        # generate texture coordinates
-        return (
-            (0.0, y),       # top left
-            (1.0, y),       # top right
-            (1.0, y + 0.5), # bottom right
-            (0.0, y + 0.5)  # bottom left
-        )
 
 # --------------------------------------------------------------------- 
 
@@ -66,15 +49,22 @@ class Dungeon(object):
 
     def mapIndex(self, x, y):
         if not self.has(x, y):
-            raise KeyError('Invalid position <{0}|{1}>'.format(x, y))
+            return -1
         # map 2d coord to 1d index using dungeon's size
         return y * self.size[0] + x
 
-    def get(self, x, y):
-        return self.cells[self.mapIndex(x, y)]
+    def __getitem__(self, pos):
+        i = self.mapIndex(*pos)
+        if i > -1:
+            return self.cells[i]
+        return None
 
-    def set(self, x, y, cell):
-        self.cells[self.mapIndex(x, y)] = cell
+    def __setitem__(self, pos, cell):
+        i = self.mapIndex(*pos)
+        if i > -1:
+            self.cells[i] = cell
+        else:
+            raise KeyError('Invalid dungeon position <{0}|{1}>'.format(*pos))
 
     def loadFromFile(self, fname):
         with open(fname, 'r') as h:
@@ -92,7 +82,7 @@ class Dungeon(object):
         for line in lines[1:]:
             x = 0
             for symbol in line:
-                d.set(x, y, Cell(x, y, symbol))
+                d[(x, y)] = Cell(x, y, symbol)
                 x += 1
             y += 1
 
