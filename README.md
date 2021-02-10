@@ -2,4 +2,4 @@
 
 # pycrawler
 
-WIP
+WIP: pixelart, dead-simple dungeon crawler
