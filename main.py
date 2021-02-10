@@ -50,7 +50,7 @@ class Renderer(object):
 
         gl.glMatrixMode(gl.GL_TEXTURE)
         gl.glLoadIdentity()
-        # @NOTE: inverted y-coordinate (else texture is upside down)
+        # @NOTE: invert y-coordinates, else textures are upside down
         gl.glScalef(1.0, -1.0, 1.0);
         
         gl.glMatrixMode(gl.GL_MODELVIEW)
@@ -144,7 +144,8 @@ if __name__ == '__main__':
                     t.clip(0.0, 0.5, 1.0, 0.5)
                     tiles.append(t)
                 
-    
+
+    next_fps_update = 0
     
     while running:
         for event in pygame.event.get():
@@ -177,5 +178,11 @@ if __name__ == '__main__':
         #screen.blit(minimap, (50, 50))
         renderer.update()
         fpsclock.tick(60)
+
+        since = pygame.time.get_ticks()
+        if since > next_fps_update:
+            fps = 'pyCrawler prototype - {0} FPS'.format(int(fpsclock.get_fps()))
+            pygame.display.set_caption(fps)
+            next_fps_update = since + 1000
 
     pygame.quit()
