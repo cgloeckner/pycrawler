@@ -28,9 +28,10 @@ class OpenGLTest(unittest.TestCase):
     def perspective(self):
         gl.glMatrixMode(gl.GL_PROJECTION)
         gl.glLoadIdentity()
-        glu.gluPerspective(45, 640/480, 0.1, 50.0)
+        glu.gluPerspective(45, 640/480, 0.1, 30.0)
         gl.glMatrixMode(gl.GL_MODELVIEW)
-        gl.glLoadIdentity()
+        gl.glLoadIdentity()         
+        gl.glEnable(gl.GL_DEPTH_TEST)
         
     def tearDown(self):
         pygame.quit()
@@ -186,3 +187,71 @@ class Sprite2DTest(OpenGLTest):
 
 
 # ---------------------------------------------------------------------
+
+
+class TilesTest(OpenGLTest):
+
+    def test_FloorTile(self):
+        t = draw.FloorTile(3.0, 2.0)
+        self.assertEqual(len(t.vertices), 4)
+        # square floor in xz-plane
+        self.assertEqual(t.vertices[0], (0.0, 0.0, 0.0))
+        self.assertEqual(t.vertices[1], (3.0, 0.0, 0.0))
+        self.assertEqual(t.vertices[2], (3.0, 0.0, 3.0))
+        self.assertEqual(t.vertices[3], (0.0, 0.0, 3.0))
+        
+        # rendering does not crash
+        self.perspective()
+        t.render()
+    
+    def test_NorthWallTile(self):
+        t = draw.NorthWallTile(3.0, 2.0)
+        self.assertEqual(len(t.vertices), 4)
+        # rect wall in far xy-plane
+        self.assertEqual(t.vertices[0], (0.0, 2.0, 0.0))
+        self.assertEqual(t.vertices[1], (3.0, 2.0, 0.0))
+        self.assertEqual(t.vertices[2], (3.0, 0.0, 0.0))
+        self.assertEqual(t.vertices[3], (0.0, 0.0, 0.0))
+        
+        # rendering does not crash
+        self.perspective()
+        t.render()
+
+    def test_SouthWallTile(self):
+        t = draw.SouthWallTile(3.0, 2.0)
+        self.assertEqual(len(t.vertices), 4)
+        # rect wall in close xy-plane
+        self.assertEqual(t.vertices[0], (0.0, 2.0, 3.0))
+        self.assertEqual(t.vertices[1], (3.0, 2.0, 3.0))
+        self.assertEqual(t.vertices[2], (3.0, 0.0, 3.0))
+        self.assertEqual(t.vertices[3], (0.0, 0.0, 3.0))
+        
+        # rendering does not crash
+        self.perspective()
+        t.render()
+    
+    def test_WestWallTile(self):
+        t = draw.WestWallTile(3.0, 2.0)
+        self.assertEqual(len(t.vertices), 4)
+        # rect wall in left-hand yz-plane
+        self.assertEqual(t.vertices[0], (0.0, 2.0, 0.0))
+        self.assertEqual(t.vertices[1], (0.0, 2.0, 3.0))
+        self.assertEqual(t.vertices[2], (0.0, 0.0, 3.0))
+        self.assertEqual(t.vertices[3], (0.0, 0.0, 0.0))
+        
+        # rendering does not crash
+        self.perspective()
+        t.render()
+
+    def test_EastWallTile(self):
+        t = draw.EastWallTile(3.0, 2.0)
+        self.assertEqual(len(t.vertices), 4) 
+        # rect wall in right-hand yz-plane
+        self.assertEqual(t.vertices[0], (3.0, 2.0, 0.0))
+        self.assertEqual(t.vertices[1], (3.0, 2.0, 3.0))
+        self.assertEqual(t.vertices[2], (3.0, 0.0, 3.0))
+        self.assertEqual(t.vertices[3], (3.0, 0.0, 0.0))
+        
+        # rendering does not crash
+        self.perspective()
+        t.render()

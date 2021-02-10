@@ -36,15 +36,23 @@ class Renderer(object):
         gl.glMatrixMode(gl.GL_PROJECTION)
         gl.glLoadIdentity()
         gl.glOrtho(0.0, self.resolution[0], self.resolution[1], 0.0, -0.01, 10.0)
+        
         gl.glMatrixMode(gl.GL_MODELVIEW)
         gl.glLoadIdentity()
 
     def perspective(self):
-        self.aspect_ratio = self.resolution[0] / self.resolution[1]                   
+        self.aspect_ratio = self.resolution[0] / self.resolution[1]
+                           
         gl.glMatrixMode(gl.GL_PROJECTION)
         gl.glLoadIdentity()
         glu.gluPerspective(45, self.aspect_ratio, 0.1, 30.0)
         gl.glTranslatef(self.x, self.y, self.z)
+
+        gl.glMatrixMode(gl.GL_TEXTURE)
+        gl.glLoadIdentity()
+        # @NOTE: inverted y-coordinate (else texture is upside down)
+        gl.glScalef(1.0, -1.0, 1.0);
+        
         gl.glMatrixMode(gl.GL_MODELVIEW)
         gl.glLoadIdentity()         
         gl.glEnable(gl.GL_DEPTH_TEST)

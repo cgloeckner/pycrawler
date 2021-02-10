@@ -80,11 +80,10 @@ class Sprite2D(object):
     def clip(self, left, top, w, h):
         self.texrect = (left, top, w, h)
         # rebuild texture coordinates
-        # @NOTE: inverted y-coordinate (else texture is upside down)
-        tl = (left,     -top)
-        tr = (left + w, -top)
-        br = (left + w, -top - h)
-        bl = (left    , -top - h)
+        tl = (left,     top)
+        tr = (left + w, top)
+        br = (left + w, top + h)
+        bl = (left    , top + h)
         self.texcoords = (tl, tr, br, bl)
 
     def transform(self):
