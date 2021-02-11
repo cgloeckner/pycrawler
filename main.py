@@ -31,7 +31,7 @@ class Renderer(object):
         self.screen     = pygame.display.set_mode((w, h), pygame.DOUBLEBUF | pygame.OPENGL | pygame.OPENGLBLIT)
 
         self.cam = render.Camera(3.0)
-        self.cam.moveTo(1.5, 0.25, 1.5)
+        self.cam.moveTo(1.5, 0.175, 1.5)
 
     def ortho(self):
         gl.glMatrixMode(gl.GL_PROJECTION)
@@ -103,21 +103,7 @@ if __name__ == '__main__':
             if event.type == pygame.QUIT:
                 running = False
 
-        key_input = pygame.key.get_pressed()
-        if key_input[pygame.K_w]:
-            renderer.cam.moveAhead(0.05)
-        if key_input[pygame.K_s]:
-            renderer.cam.moveAhead(-0.05)
-        if key_input[pygame.K_a]:
-            renderer.cam.moveSideways(-0.05)
-        if key_input[pygame.K_d]:     
-            renderer.cam.moveSideways(0.05)
-        if key_input[pygame.K_q]:
-            renderer.cam.rotate(-3.0)
-            #renderer.cam.moveUp(0.1)
-        if key_input[pygame.K_e]:
-            renderer.cam.rotate(3.0)
-            #renderer.cam.moveUp(-0.1)
+        renderer.cam.update(pygame.key.get_pressed())
 
         renderer.clear()
         
@@ -138,11 +124,5 @@ if __name__ == '__main__':
         #screen.blit(minimap, (50, 50))
         renderer.update()
         fpsclock.tick(60)
-
-        since = pygame.time.get_ticks()
-        if since > next_fps_update:
-            fps = 'pyCrawler prototype - {0} FPS'.format(int(fpsclock.get_fps()))
-            pygame.display.set_caption(fps)
-            next_fps_update = since + 1000
 
     pygame.quit()
