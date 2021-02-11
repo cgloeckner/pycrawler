@@ -3,8 +3,10 @@
 
 
 class VertexBuilder(object):
-    @staticmethod
-    def floor(x: int, y: int, w: float, h: float) -> tuple: 
+    def __init__(self):
+        self.data = list()
+
+    def floor(self, x: int, y: int, z: int, w: float, h: float) -> tuple: 
         # build vertices "on the ground"
         tl = (x*w + 0.0, 0.0, y*w + 0.0)
         tr = (x*w +   w, 0.0, y*w + 0.0)
@@ -25,8 +27,7 @@ class VertexBuilder(object):
         colors = (tl, tr, br, bl)
         return vertices, texcoords, colors
 
-    @staticmethod
-    def northWall(x: int, y: int, w: float, h: float, z: int=0) -> tuple:
+    def northWall(self, x: int, y: int, z: int, w: float, h: float) -> tuple:
         # build vertices "at the northern edge"
         bl = (x*w +  .0, 0.0 + z*h, y*w + 0.0)
         br = (x*w +   w, 0.0 + z*h, y*w + 0.0)
@@ -47,13 +48,11 @@ class VertexBuilder(object):
         colors = (tl, tr, br, bl)
         return vertices, texcoords, colors
     
-    @staticmethod
-    def southWall(x: int, y: int, w: float, h: float, z: int=0) -> tuple:
+    def southWall(self, x: int, y: int, z: int, w: float, h: float) -> tuple:
         # build vertices "at the southern edge"
-        return VertexBuilder.northWall(x, y+1, w, h, z)
+        return self.northWall(x, y+1, z, w, h)
     
-    @staticmethod
-    def westWall(x: int, y: int, w: float, h: float, z: int=0) -> tuple:
+    def westWall(self, x: int, y: int, z: int, w: float, h: float) -> tuple:
         # build vertices "at the western edge"
         tl = (x*w,   h + z*h, y*w + 0.0)
         tr = (x*w,   h + z*h, y*w +   w)
@@ -74,11 +73,65 @@ class VertexBuilder(object):
         colors = (tl, tr, br, bl)
         return vertices, texcoords, colors
 
-    @staticmethod
-    def eastWall(x: int, y: int, w: float, h: float, z: int=0) -> tuple:
+    def eastWall(self, x: int, y: int, z: int, w: float, h: float) -> tuple:
         # build vertices "at the eastern edge"
-        return VertexBuilder.westWall(x+1, y, w, h, z)
+        return self.westWall(x+1, y, z, w, h)
+    
+    def loadFromDungeon(self, dungeon) -> bool:
+        white = (1.0, 1.0, 1.0)
+        black = (0.0, 0.0, 0.0)
+        yellow = (1.0, 1.0, 0.0)
 
+        data = list()
+        for y in range(dungeon.size[1]):
+            for x in range(dungeon.size[0]):
+                cell = dungeon[(x, y)]
+                if cell.isWall():
+                    continue
+                
+                # query neighbor cells
+                north = cell.getNeighbor(dungeon, (0, -1))
+                south = cell.getNeighbor(dungeon, (0,  1))
+                east  = cell.getNeighbor(dungeon, ( 1, 0))
+                west  = cell.getNeighbor(dungeon, (-1, 0))
+                
+                if cell.isFloor():
+                    v, t, c = self.floor(x, y, 0, 3.0, 2.0)
+                    data.append((v, t, c))
+
+                if not cell.isWall():
+                    if north.isWall():
+                        v, t, c = self.northWall(x, y, 0, 3.0, 2.0)
+                        data.append((v, t, c))
+                    if south.isWall():
+                        v, t, c = self.southWall(x, y, 0, 3.0, 2.0)
+                        data.append((v, t, c))
+                    if west.isWall():
+                        v, t, c = self.westWall(x, y, 0, 3.0, 2.0)
+                        data.append((v, t, c))
+                    if east.isWall():
+                        v, t, c = self.eastWall(x, y, 0, 3.0, 2.0)
+                        data.append((v, t, c))
+
+                if cell.isVoid():
+                    if not north.isVoid():
+                        v, t, c = self.northWall(x, y, -1, 3.0, 2.0)
+                        c = (c[0], c[1], black, black)
+                        data.append((v, t, c))
+                    if not south.isVoid():
+                        v, t, c = self.southWall(x, y, -1, 3.0, 2.0)
+                        c = (c[0], c[1], black, black)
+                        data.append((v, t, c))
+                    if not west.isVoid():
+                        v, t, c = self.westWall(x, y, -1, 3.0, 2.0)
+                        c = (c[0], c[1], black, black)
+                        data.append((v, t, c))
+                    if not east.isVoid():
+                        v, t, c = self.eastWall(x, y, -1, 3.0, 2.0) 
+                        c = (c[0], c[1], black, black)
+                        data.append((v, t, c))
+        self.data = data
+        return True
 
 # ---------------------------------------------------------------------
 

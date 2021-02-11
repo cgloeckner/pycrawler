@@ -10,7 +10,9 @@ import dungeon
 class VertexBuilderTest(unittest.TestCase):
 
     def test_floor(self):
-        v, t, c = dungeon.VertexBuilder.floor(4, 5, 3.0, 2.0)
+        vb = dungeon.VertexBuilder()
+        
+        v, t, c = vb.floor(4, 5, 0, 3.0, 2.0)
         self.assertEqual(len(v), 4)
         # square floor in xz-plane
         self.assertEqual(v[0], (12.0, 0.0, 15.0))
@@ -27,7 +29,9 @@ class VertexBuilderTest(unittest.TestCase):
             self.assertEqual(c[i], (1.0, 1.0, 1.0))
     
     def test_northWall(self):
-        v, t, c = dungeon.VertexBuilder.northWall(4, 5, 3.0, 2.0, z=-1)
+        vb = dungeon.VertexBuilder()
+        
+        v, t, c = vb.northWall(4, 5, -1, 3.0, 2.0)
         self.assertEqual(len(v), 4)
         # rect wall in far xy-plane
         self.assertEqual(v[0], (12.0,  0.0, 15.0))
@@ -44,7 +48,9 @@ class VertexBuilderTest(unittest.TestCase):
             self.assertEqual(c[i], (1.0, 1.0, 1.0))
 
     def test_southWall(self):
-        v, t, c = dungeon.VertexBuilder.southWall(4, 5, 3.0, 2.0, z=-1)
+        vb = dungeon.VertexBuilder()
+        
+        v, t, c = vb.southWall(4, 5, -1, 3.0, 2.0)
         self.assertEqual(len(v), 4)
         # rect wall in close xy-plane
         self.assertEqual(v[0], (12.0,  0.0, 18.0))
@@ -61,7 +67,9 @@ class VertexBuilderTest(unittest.TestCase):
             self.assertEqual(c[i], (1.0, 1.0, 1.0))
     
     def test_westWall(self):
-        v, t, c = dungeon.VertexBuilder.westWall(4, 5, 3.0, 2.0, z=-1)
+        vb = dungeon.VertexBuilder()
+        
+        v, t, c = vb.westWall(4, 5, -1, 3.0, 2.0)
         self.assertEqual(len(v), 4)
         # rect wall in left-hand yz-plane
         self.assertEqual(v[0], (12.0,  0.0, 15.0))
@@ -78,7 +86,9 @@ class VertexBuilderTest(unittest.TestCase):
             self.assertEqual(c[i], (1.0, 1.0, 1.0))
     
     def test_eastWall(self):
-        v, t, c = dungeon.VertexBuilder.eastWall(4, 5, 3.0, 2.0, z=-1)
+        vb = dungeon.VertexBuilder()
+        
+        v, t, c = vb.eastWall(4, 5, -1, 3.0, 2.0)
         self.assertEqual(len(v), 4)
         # rect wall in left-hand yz-plane
         self.assertEqual(v[0], (15.0,  0.0, 15.0))
@@ -93,6 +103,56 @@ class VertexBuilderTest(unittest.TestCase):
         # white color for all vertices
         for i in range(4):
             self.assertEqual(c[i], (1.0, 1.0, 1.0))
+
+    def test_build(self):
+        # load test dungeon
+        raw = '''3x3
+#.#
+. #
+# #'''
+        d = dungeon.Dungeon()
+        self.assertTrue(d.loadFromMemory(raw))
+
+        # monkeypatch for easier unittesting
+        vb = dungeon.VertexBuilder()
+        vb.floor     = lambda x, y, z, w, h: ((x, y, z), ('F', w, h), (None, None, None, None))
+        vb.northWall = lambda x, y, z, w, h: ((x, y, z), ('N', w, h), (None, None, None, None))
+        vb.southWall = lambda x, y, z, w, h: ((x, y, z), ('S', w, h), (None, None, None, None))
+        vb.westWall  = lambda x, y, z, w, h: ((x, y, z), ('W', w, h), (None, None, None, None))
+        vb.eastWall  = lambda x, y, z, w, h: ((x, y, z), ('E', w, h), (None, None, None, None))
+        
+        # build dungeon
+        self.assertTrue(vb.loadFromDungeon(d))
+        for a, b, c in vb.data:
+            print(a, "\t", b, "\t", c)
+        self.assertEqual(len(vb.data), 20)
+        black = (0.0, 0.0, 0.0)
+        # (1, 0) is void with walls in N/W/E
+        self.assertEqual(vb.data[ 0], ((1, 0,  0), ('N', 3.0, 2.0), (None, None, None, None)))
+        self.assertEqual(vb.data[ 1], ((1, 0,  0), ('W', 3.0, 2.0), (None, None, None, None)))
+        self.assertEqual(vb.data[ 2], ((1, 0,  0), ('E', 3.0, 2.0), (None, None, None, None)))
+        # and deep walls all around (colored black towards the pit)
+        self.assertEqual(vb.data[ 3], ((1, 0, -1), ('N', 3.0, 2.0), (None, None, black, black)))
+        self.assertEqual(vb.data[ 4], ((1, 0, -1), ('S', 3.0, 2.0), (None, None, black, black)))
+        self.assertEqual(vb.data[ 5], ((1, 0, -1), ('W', 3.0, 2.0), (None, None, black, black)))
+        self.assertEqual(vb.data[ 6], ((1, 0, -1), ('E', 3.0, 2.0), (None, None, black, black)))
+        # (0, 1) is void with wall in N/W/S
+        self.assertEqual(vb.data[ 7], ((0, 1,  0), ('N', 3.0, 2.0), (None, None, None, None)))
+        self.assertEqual(vb.data[ 8], ((0, 1,  0), ('S', 3.0, 2.0), (None, None, None, None)))
+        self.assertEqual(vb.data[ 9], ((0, 1,  0), ('W', 3.0, 2.0), (None, None, None, None))) 
+        # and deep walls all around (colored black towards the pit)
+        self.assertEqual(vb.data[10], ((0, 1, -1), ('N', 3.0, 2.0), (None, None, black, black)))
+        self.assertEqual(vb.data[11], ((0, 1, -1), ('S', 3.0, 2.0), (None, None, black, black)))
+        self.assertEqual(vb.data[12], ((0, 1, -1), ('W', 3.0, 2.0), (None, None, black, black)))
+        self.assertEqual(vb.data[13], ((0, 1, -1), ('E', 3.0, 2.0), (None, None, black, black)))
+        # (1, 1) is floor with wall in E                           
+        self.assertEqual(vb.data[14], ((1, 1,  0), ('F', 3.0, 2.0), (None, None, None, None)))
+        self.assertEqual(vb.data[15], ((1, 1,  0), ('E', 3.0, 2.0), (None, None, None, None)))
+        # (1, 2) is floor with walls in S/W/E                       
+        self.assertEqual(vb.data[16], ((1, 2,  0), ('F', 3.0, 2.0), (None, None, None, None)))
+        self.assertEqual(vb.data[17], ((1, 2,  0), ('S', 3.0, 2.0), (None, None, None, None)))
+        self.assertEqual(vb.data[18], ((1, 2,  0), ('W', 3.0, 2.0), (None, None, None, None)))
+        self.assertEqual(vb.data[19], ((1, 2,  0), ('E', 3.0, 2.0), (None, None, None, None)))
 
 
 # ---------------------------------------------------------------------
@@ -145,7 +205,6 @@ class CellTest(unittest.TestCase):
         self.assertTrue(south.isFloor())
         self.assertTrue(east.isWall())
         self.assertTrue(west.isVoid())
-
 
 # ---------------------------------------------------------------------
 
