@@ -6,6 +6,97 @@ import unittest, tempfile
 import dungeon
 
 
+
+class VertexBuilderTest(unittest.TestCase):
+
+    def test_floor(self):
+        v, t, c = dungeon.VertexBuilder.floor(4, 5, 3.0, 2.0)
+        self.assertEqual(len(v), 4)
+        # square floor in xz-plane
+        self.assertEqual(v[0], (12.0, 0.0, 15.0))
+        self.assertEqual(v[1], (15.0, 0.0, 15.0))
+        self.assertEqual(v[2], (15.0, 0.0, 18.0))
+        self.assertEqual(v[3], (12.0, 0.0, 18.0))
+        # texCoord for floor rect
+        self.assertEqual(t[0], (0.0, 0.0))
+        self.assertEqual(t[1], (1.0, 0.0))
+        self.assertEqual(t[2], (1.0, 0.5))
+        self.assertEqual(t[3], (0.0, 0.5))
+        # white color for all vertices
+        for i in range(4):
+            self.assertEqual(c[i], (1.0, 1.0, 1.0))
+    
+    def test_northWall(self):
+        v, t, c = dungeon.VertexBuilder.northWall(4, 5, 3.0, 2.0, z=-1)
+        self.assertEqual(len(v), 4)
+        # rect wall in far xy-plane
+        self.assertEqual(v[0], (12.0,  0.0, 15.0))
+        self.assertEqual(v[1], (15.0,  0.0, 15.0))
+        self.assertEqual(v[2], (15.0, -2.0, 15.0))
+        self.assertEqual(v[3], (12.0, -2.0, 15.0)) 
+        # texCoord for wall rect
+        self.assertEqual(t[0], (0.0, 0.5))
+        self.assertEqual(t[1], (1.0, 0.5))
+        self.assertEqual(t[2], (1.0, 1.0))
+        self.assertEqual(t[3], (0.0, 1.0))
+        # white color for all vertices
+        for i in range(4):
+            self.assertEqual(c[i], (1.0, 1.0, 1.0))
+
+    def test_southWall(self):
+        v, t, c = dungeon.VertexBuilder.southWall(4, 5, 3.0, 2.0, z=-1)
+        self.assertEqual(len(v), 4)
+        # rect wall in close xy-plane
+        self.assertEqual(v[0], (12.0,  0.0, 18.0))
+        self.assertEqual(v[1], (15.0,  0.0, 18.0))
+        self.assertEqual(v[2], (15.0, -2.0, 18.0))
+        self.assertEqual(v[3], (12.0, -2.0, 18.0)) 
+        # texCoord for wall rect
+        self.assertEqual(t[0], (0.0, 0.5))
+        self.assertEqual(t[1], (1.0, 0.5))
+        self.assertEqual(t[2], (1.0, 1.0))
+        self.assertEqual(t[3], (0.0, 1.0))
+        # white color for all vertices
+        for i in range(4):
+            self.assertEqual(c[i], (1.0, 1.0, 1.0))
+    
+    def test_westWall(self):
+        v, t, c = dungeon.VertexBuilder.westWall(4, 5, 3.0, 2.0, z=-1)
+        self.assertEqual(len(v), 4)
+        # rect wall in left-hand yz-plane
+        self.assertEqual(v[0], (12.0,  0.0, 15.0))
+        self.assertEqual(v[1], (12.0,  0.0, 18.0))
+        self.assertEqual(v[2], (12.0, -2.0, 18.0))
+        self.assertEqual(v[3], (12.0, -2.0, 15.0)) 
+        # texCoord for wall rect
+        self.assertEqual(t[0], (0.0, 0.5))
+        self.assertEqual(t[1], (1.0, 0.5))
+        self.assertEqual(t[2], (1.0, 1.0))
+        self.assertEqual(t[3], (0.0, 1.0))
+        # white color for all vertices
+        for i in range(4):
+            self.assertEqual(c[i], (1.0, 1.0, 1.0))
+    
+    def test_eastWall(self):
+        v, t, c = dungeon.VertexBuilder.eastWall(4, 5, 3.0, 2.0, z=-1)
+        self.assertEqual(len(v), 4)
+        # rect wall in left-hand yz-plane
+        self.assertEqual(v[0], (15.0,  0.0, 15.0))
+        self.assertEqual(v[1], (15.0,  0.0, 18.0))
+        self.assertEqual(v[2], (15.0, -2.0, 18.0))
+        self.assertEqual(v[3], (15.0, -2.0, 15.0)) 
+        # texCoord for wall rect
+        self.assertEqual(t[0], (0.0, 0.5))
+        self.assertEqual(t[1], (1.0, 0.5))
+        self.assertEqual(t[2], (1.0, 1.0))
+        self.assertEqual(t[3], (0.0, 1.0))
+        # white color for all vertices
+        for i in range(4):
+            self.assertEqual(c[i], (1.0, 1.0, 1.0))
+
+
+# ---------------------------------------------------------------------
+
 class CellTest(unittest.TestCase):
     
     def setUp(self):
@@ -34,6 +125,26 @@ class CellTest(unittest.TestCase):
         self.assertFalse(floor_cell.isVoid())
         self.assertFalse(floor_cell.isWall())
         self.assertTrue(floor_cell.isFloor())
+
+    def test_getNeighbor(self):
+        # load test dungeon
+        raw = '''3x3
+#.#
+. #
+# #'''
+        d = dungeon.Dungeon()
+        self.assertTrue(d.loadFromMemory(raw))
+
+        center = d[(1, 1)]
+        north  = center.getNeighbor(d, ( 0, -1))
+        south  = center.getNeighbor(d, ( 0,  1))
+        east   = center.getNeighbor(d, ( 1,  0))
+        west   = center.getNeighbor(d, (-1,  0))
+
+        self.assertTrue(north.isVoid())
+        self.assertTrue(south.isFloor())
+        self.assertTrue(east.isWall())
+        self.assertTrue(west.isVoid())
 
 
 # ---------------------------------------------------------------------
@@ -103,6 +214,18 @@ class DungeonTest(unittest.TestCase):
         
         self.assertTrue(d[(2, 3)].isFloor())
 
+    def test_loadFromMemory_saveToMemory(self):
+        # load from string
+        raw = '5x3\n#####\n #..#\n#####'
+        d = dungeon.Dungeon()
+        self.assertTrue(d.loadFromMemory(raw))                    
+        for c in d.cells:
+            self.assertTrue(d.has(*c.pos))
+
+        # save to string
+        out = d.saveToMemory()
+        self.assertEqual(raw, out)
+        
     def test_loadFromFile_saveToFile(self):
         raw = '5x3\n#####\n #..#\n#####'
         d = dungeon.Dungeon()

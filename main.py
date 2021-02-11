@@ -67,56 +67,61 @@ class Renderer(object):
 
 # ---------------------------------------------------------------------
 
-def build_dungeon_vertices(dungeon):
-    neighbor_iteration = [(-1, 0, draw.WestWallTile), (1, 0, draw.EastWallTile), (0, 1, draw.SouthWallTile), (0, -1, draw.NorthWallTile)]
+def build_dungeon_vertices(d):
     white = (1.0, 1.0, 1.0)
     black = (0.0, 0.0, 0.0)
     yellow = (1.0, 1.0, 0.0)
     
-    tiles = list()
-    for y in range(dungeon.size[1]):
-        for x in range(dungeon.size[0]):
-            c = dungeon[(x, y)]
-            if c.isWall():
+    data = list()
+    for y in range(d.size[1]):
+        for x in range(d.size[0]):
+            cell = d[(x, y)]
+            if cell.isWall():
                 continue
             
-            if c.isFloor():
-                t = draw.FloorTile(3.0, 2.0)
-                t.moveTo(x * 3.0, 0.0, y * 3.0)
-                t.texture = tileset 
-                t.clip(0.0, 0.0, 1.0, 0.5)
-                tiles.append(t)
+            # query neighbor cells
+            north = cell.getNeighbor(d, (0, -1))
+            south = cell.getNeighbor(d, (0,  1))
+            east  = cell.getNeighbor(d, ( 1, 0))
+            west  = cell.getNeighbor(d, (-1, 0))
+            
+            if cell.isFloor():
+                v, t, c = dungeon.VertexBuilder.floor(x, y, 3.0, 2.0)
+                data.append((v, t, c))
 
-            # place walls around floor/void    
-            for neighbor in neighbor_iteration:
-                newx = x + neighbor[0]
-                newy = y + neighbor[1]
-                c2 = dungeon[(newx, newy)]
-                if c2 is not None and not c2.isWall():
-                    continue
-                t = neighbor[2](3.0, 2.0)
-                t.moveTo(x * 3.0, 0.0, y * 3.0)
-                t.texture = tileset      
-                t.colorize(yellow, yellow, white, white)
-                t.clip(0.0, 0.5, 1.0, 0.5)
-                tiles.append(t)
+            if not cell.isWall():
+                if north.isWall():
+                    v, t, c = dungeon.VertexBuilder.northWall(x, y, 3.0, 2.0)
+                    data.append((v, t, c))
+                if south.isWall():
+                    v, t, c = dungeon.VertexBuilder.southWall(x, y, 3.0, 2.0)
+                    data.append((v, t, c))
+                if west.isWall():
+                    v, t, c = dungeon.VertexBuilder.westWall(x, y, 3.0, 2.0)
+                    data.append((v, t, c))
+                if east.isWall():
+                    v, t, c = dungeon.VertexBuilder.eastWall(x, y, 3.0, 2.0)
+                    data.append((v, t, c))
 
-            if c.isVoid():
-                # place lower walls in void's pit
-                for neighbor in neighbor_iteration:
-                    newx = x + neighbor[0]
-                    newy = y + neighbor[1]
-                    # TODO: get --> None
-                    c2 = dungeon[(newx, newy)]
-                    if c2 is not None and c2.isVoid():
-                        continue
-                    t = neighbor[2](3.0, 2.0)
-                    t.moveTo(x * 3.0, -2.0, y * 3.0)
-                    t.texture = tileset
-                    t.colorize(white, white, black, black)  
-                    t.clip(0.0, 0.5, 1.0, 0.5)
-                    tiles.append(t)
-    return tiles            
+            if cell.isVoid():
+                if not north.isVoid():
+                    v, t, c = dungeon.VertexBuilder.northWall(x, y, 3.0, 2.0, z=-1)
+                    c = (c[0], c[1], (0.0, 0.0, 0.0), (0.0, 0.0, 0.0))
+                    data.append((v, t, c))
+                if not south.isVoid():
+                    v, t, c = dungeon.VertexBuilder.southWall(x, y, 3.0, 2.0, z=-1)
+                    c = (c[0], c[1], (0.0, 0.0, 0.0), (0.0, 0.0, 0.0))
+                    data.append((v, t, c))
+                if not west.isVoid():
+                    v, t, c = dungeon.VertexBuilder.westWall(x, y, 3.0, 2.0, z=-1) 
+                    c = (c[0], c[1], (0.0, 0.0, 0.0), (0.0, 0.0, 0.0))
+                    data.append((v, t, c))
+                if not east.isVoid():
+                    v, t, c = dungeon.VertexBuilder.eastWall(x, y, 3.0, 2.0, z=-1) 
+                    c = (c[0], c[1], (0.0, 0.0, 0.0), (0.0, 0.0, 0.0))
+                    data.append((v, t, c))
+            
+    return data            
 
 if __name__ == '__main__':
     pygame.init()
@@ -140,7 +145,7 @@ if __name__ == '__main__':
     # demo terrain
     d = dungeon.Dungeon()
     d.loadFromFile('demo.txt')
-    tiles = build_dungeon_vertices(d)
+    tile_data = build_dungeon_vertices(d)
 
     next_fps_update = 0
     
@@ -169,8 +174,14 @@ if __name__ == '__main__':
         hud.render()
 
         renderer.perspective()
-        for t in tiles:
-            t.render()
+        tileset.bind()
+        gl.glBegin(gl.GL_QUADS)
+        for v, t, c in tile_data:
+            for i in range(4):
+                gl.glColor3fv(c[i])
+                gl.glTexCoord2fv(t[i])
+                gl.glVertex3fv(v[i])
+        gl.glEnd()
 
         #screen.blit(minimap, (50, 50))
         renderer.update()

@@ -19,7 +19,7 @@ class Texture(object):
 
         gl.glEnable(gl.GL_TEXTURE_2D)
         self.id = gl.glGenTextures(1)
-        gl.glBindTexture(gl.GL_TEXTURE_2D, self.id)
+        self.bind()
         gl.glTexImage2D(gl.GL_TEXTURE_2D, 0, gl.GL_RGBA, self.w, self.h, 0, gl.GL_RGBA, gl.GL_UNSIGNED_BYTE, data)
         gl.glTexParameterf(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_WRAP_S, gl.GL_REPEAT)
         gl.glTexParameterf(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_WRAP_T, gl.GL_REPEAT)
@@ -27,6 +27,13 @@ class Texture(object):
         gl.glTexParameterf(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MIN_FILTER, gl.GL_NEAREST)
         
         return True
+
+    @staticmethod
+    def unbind():
+        gl.glBindTexture(gl.GL_TEXTURE_2D, 0)
+
+    def bind(self):
+        gl.glBindTexture(gl.GL_TEXTURE_2D, self.id)
 
 
 # ---------------------------------------------------------------------
@@ -94,10 +101,11 @@ class Sprite2D(object):
         gl.glLoadIdentity()
         
         self.transform()
-        
-        gl.glBindTexture(gl.GL_TEXTURE_2D,
-            self.texture.id if self.texture is not None else 0
-        )
+
+        if self.texture is not None:
+            self.texture.bind()
+        else:
+            Texture.unbind()
         
         gl.glBegin(gl.GL_QUADS)
         for i in range(4):
