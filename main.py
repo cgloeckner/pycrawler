@@ -64,6 +64,31 @@ class Renderer(object):
         pygame.display.flip()
 
 
+"""
+class VertexArray(object):
+    def __init__(self):
+        super().__init__(self)
+        self.data   = list()
+        self.buffer = gl.glGenBuffers(1)
+        gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.buffer)
+
+    def __call__(self):
+        array_type = (gl.GLfloat * len(self.data))
+        gl.glBufferData(gl.GL_ARRAY_BUFFER, len(self.data) * sizeOfFloat,
+            array_type(*self.data), gl.GL_STATIC_DRAW
+        )
+        gl.glBindBuffer(gl.GL_ARRAY_BUFFER, 0)
+
+    def render(self):
+        gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.buffer)
+        gl.gnEnableVertexAttributArray(0)
+        gl.glVertexAttribPointer(0, self.data, gl.GL_FLOAT, False, 0, null)
+
+        gl.glDrawAwways(gl.GL_QUADS, 0, len(self.data) / vertexComponents)#????
+
+        gl.glDisableVertexAttribArray(0)
+"""        
+
 
 # ---------------------------------------------------------------------
            
@@ -84,9 +109,10 @@ if __name__ == '__main__':
     #minimap = createMinimap(tileset, d, 16)
 
     hud = draw.Sprite2D(32, 32)
-    hud.moveTo(16, 16)
+    hud.moveTo(640, 480)
+    hud.centerTo(1.0, 1.0)
     hud.texture = heart
-    
+
     # demo terrain
     d = dungeon.Dungeon()
     d.loadFromFile('demo.txt')

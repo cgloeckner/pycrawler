@@ -43,6 +43,7 @@ class Sprite2D(object):
         self.x = 0
         self.y = 0
         self.color = tuple([(1.0, 1.0, 1.0)] * 4) # topleft, tright, bottoml, br
+        self.origin = (0.5, 0.5) # centered
 
         self.resize(w, h)
         
@@ -56,6 +57,9 @@ class Sprite2D(object):
     def moveBy(self, dx, dy):
         self.x += dx
         self.y += dy
+
+    def centerTo(self, relx, rely):
+        self.origin = (relx, rely)
 
     def resize(self, w, h):
         w = float(w)
@@ -94,7 +98,7 @@ class Sprite2D(object):
         self.texcoords = (tl, tr, br, bl)
 
     def transform(self):
-        gl.glTranslate(self.x - self.w / 2, self.y - self.h / 2, 0.0)
+        gl.glTranslate(self.x - self.origin[0] * self.w, self.y - self.origin[1] * self.h, 0.0)
 
     def render(self):
         gl.glPushMatrix()
@@ -135,50 +139,3 @@ class BaseTile(Sprite2D):
     def transform(self):                          
         gl.glTranslate(self.x - self.w / 2, self.y, self.z - self.h / 2) 
 
-
-# ---------------------------------------------------------------------
-
-class FloorTile(BaseTile):
-    def rebuild(self):
-        # rebuild vertices "on the ground"
-        tl = (   0.0, 0.0,    0.0)
-        tr = (self.w, 0.0,    0.0)
-        br = (self.w, 0.0, self.w)
-        bl = (   0.0, 0.0, self.w)
-        self.vertices = (tl, tr, br, bl)
-
-class NorthWallTile(BaseTile):
-    def rebuild(self):
-        # rebuild vertices "at the northern edge"
-        bl = (   0.0,    0.0, 0.0)
-        br = (self.w,    0.0, 0.0)
-        tr = (self.w, self.h, 0.0)
-        tl = (   0.0, self.h, 0.0)
-        self.vertices = (tl, tr, br, bl)
-
-class EastWallTile(BaseTile):
-    def rebuild(self):
-        # rebuild vertices "at the eastern edge"
-        tl = (self.w, self.h,    0.0)
-        tr = (self.w, self.h, self.w)
-        br = (self.w,    0.0, self.w)
-        bl = (self.w,    0.0,    0.0)
-        self.vertices = (tl, tr, br, bl)
-
-class SouthWallTile(BaseTile):
-    def rebuild(self):
-        # rebuild vertices "at the southern edge"
-        bl = (   0.0,    0.0, self.w)
-        br = (self.w,    0.0, self.w)
-        tr = (self.w, self.h, self.w)
-        tl = (   0.0, self.h, self.w)
-        self.vertices = (tl, tr, br, bl)
-
-class WestWallTile(BaseTile):
-    def rebuild(self):
-        # rebuild vertices "at the western edge"
-        tl = (0.0, self.h,    0.0)
-        tr = (0.0, self.h, self.w)
-        br = (0.0,    0.0, self.w)
-        bl = (0.0,    0.0,    0.0)
-        self.vertices = (tl, tr, br, bl)
