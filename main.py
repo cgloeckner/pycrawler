@@ -135,6 +135,8 @@ if __name__ == '__main__':
     sprite1.moveTo(4.5, 0.0, 4.5)
     sprite1.centerTo(0.5, 0.0, 0.5)
     sprite1.texture = goblin
+    sprite1.animator = draw.FrameAnimator(sprite1, 4, 8)
+    sprite1.animator.start(loop=True)
     
     sprite2 = draw.Sprite3D()  
     sprite2.resize(0.5, 0.5)
@@ -145,7 +147,9 @@ if __name__ == '__main__':
     sprite3 = draw.Sprite3D()
     sprite3.moveTo(4.0, 0.0, 4.0)
     sprite3.centerTo(0.5, 0.0, 0.5)
-    sprite3.texture = goblin
+    sprite3.texture = goblin  
+    sprite3.animator = draw.FrameAnimator(sprite3, 4, 8)
+    sprite3.animator.start(loop=True)
     
     while running:
         for event in pygame.event.get():
@@ -181,6 +185,9 @@ if __name__ == '__main__':
         sprite1.rotate = renderer.cam.angle
         sprite2.rotate = renderer.cam.angle
         sprite3.rotate = renderer.cam.angle
+
+        sprite1.animator()
+        sprite3.animator()
         
         sprite1.render()
         sprite2.render()

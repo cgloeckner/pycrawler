@@ -51,10 +51,11 @@ class FrameAnimator(object):
     def isIdle(self):
         return not self.running
 
-    def start(self):
+    def start(self, loop=False):
         self.current = 0
         self.tick    = 0
         self.running = True
+        self.loop    = loop
         self.applyFrame() 
 
     def applyFrame(self):
@@ -71,7 +72,7 @@ class FrameAnimator(object):
             self.tick     = 0
             self.current += 1
             self.applyFrame()
-            if self.current >= self.num_frames:
+            if not self.loop and self.current >= self.num_frames:
                 self.running = False
 
 
