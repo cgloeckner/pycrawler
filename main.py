@@ -5,7 +5,7 @@ import pygame
 import OpenGL.GL as gl
 import OpenGL.GLU as glu
 
-import dungeon, draw
+import dungeon, draw, render
 
 """
 def createMinimap(tileset, dungeon, tile_size):
@@ -23,60 +23,6 @@ def createMinimap(tileset, dungeon, tile_size):
     return minimap
 """
 
-import math
-
-class Camera(object):
-    def __init__(self):
-        self.moveTo(0.0, 0.0, 0.0)
-        self.look = (0.0, 1.0)
-        self.angle = 0.0
-
-    def moveTo(self, x: float, y: float, z: float):
-        self.pos = (x, y, z)
-
-    def rotate(self, angle):
-        """ Rotate around y-axis.
-        """    
-        radians = angle * math.pi / 180.0
-        cosalph = math.cos(radians)
-        sinalph = math.sin(radians)
-        x, z = self.look
-        x = x * cosalph - z * sinalph
-        z = x * sinalph + z * cosalph
-        self.look = (x, z)
-        self.angle += angle
-
-    def moveAhead(self, distance):
-        x, y, z = self.pos
-        x += distance * self.look[0]
-        z += distance * self.look[1]
-        self.pos = (x, y, z)
-
-    def moveSideways(self, distance):
-        # calculate normal vector of looking direction within xz-plane
-        # x = x * cos(90°) - y * sin(90°)
-        # y = x * sin(90°) + y * cos(90°)
-        normal_x = -self.look[1]
-        normal_z =  self.look[0]
-
-        # alter position       
-        x, y, z = self.pos
-        x += distance * normal_x
-        z += distance * normal_z  
-        self.pos = (x, y, z)
-
-    def moveUp(self, distance):
-        x, y, z = self.pos
-        y += distance
-        self.pos = (x, y, z)
-
-    def __call__(self):
-        """ Apply camera.
-        """
-        gl.glRotate(self.angle, 0.0, 1.0, 0.0)
-        gl.glTranslate(*self.pos)
-        
-        
 
 
 class Renderer(object):
@@ -84,8 +30,8 @@ class Renderer(object):
         self.resolution = (w, h)
         self.screen     = pygame.display.set_mode((w, h), pygame.DOUBLEBUF | pygame.OPENGL | pygame.OPENGLBLIT)
 
-        self.cam = Camera()
-        self.cam.moveTo(0.0, -1.0, -5.0)
+        self.cam = render.Camera(3.0)
+        self.cam.moveTo(1.5, 0.25, 1.5)
 
     def ortho(self):
         gl.glMatrixMode(gl.GL_PROJECTION)
@@ -101,7 +47,7 @@ class Renderer(object):
         gl.glMatrixMode(gl.GL_PROJECTION)
         gl.glLoadIdentity()
         glu.gluPerspective(45, self.aspect_ratio, 0.1, 30.0)
-        self.cam()
+        self.cam.apply()
 
         gl.glMatrixMode(gl.GL_TEXTURE)
         gl.glLoadIdentity()
@@ -159,13 +105,13 @@ if __name__ == '__main__':
 
         key_input = pygame.key.get_pressed()
         if key_input[pygame.K_w]:
-            renderer.cam.moveAhead(0.15)
+            renderer.cam.moveAhead(0.05)
         if key_input[pygame.K_s]:
-            renderer.cam.moveAhead(-0.15)
+            renderer.cam.moveAhead(-0.05)
         if key_input[pygame.K_a]:
-            renderer.cam.moveSideways(-0.15)
-        if key_input[pygame.K_d]:
-            renderer.cam.moveSideways(0.15)
+            renderer.cam.moveSideways(-0.05)
+        if key_input[pygame.K_d]:     
+            renderer.cam.moveSideways(0.05)
         if key_input[pygame.K_q]:
             renderer.cam.rotate(-3.0)
             #renderer.cam.moveUp(0.1)
