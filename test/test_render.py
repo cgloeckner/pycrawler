@@ -13,7 +13,7 @@ import render
 class CameraAnimationTest(OpenGLTest):
     
     def test_init(self):
-        ani = render.CameraAnimation(render.Camera())
+        ani = render.CameraAnimation(render.Camera(None)) # dummy dungeon
 
         self.assertIsNotNone(ani.camera)
         self.assertIsNone(ani.handle)
@@ -29,7 +29,7 @@ class CameraAnimationTest(OpenGLTest):
                 self.i += n
 
         t = Test()
-        ani = render.CameraAnimation(render.Camera())
+        ani = render.CameraAnimation(render.Camera(None)) # dummy dungeon
         ani.start(t.foo, (2, ), 13)
         
         self.assertEqual(ani.handle, t.foo)
@@ -61,7 +61,7 @@ class CameraAnimationTest(OpenGLTest):
 
         # restart
         t = Test()
-        ani = render.CameraAnimation(render.Camera())
+        ani = render.CameraAnimation(render.Camera(None)) # dummy dungeon
         ani.start(t.foo, (3, ), 2)
         
         self.assertEqual(ani.handle, t.foo)
@@ -74,7 +74,7 @@ class CameraAnimationTest(OpenGLTest):
         self.assertFalse(ani.isIdle())
 
     def test_start_aliases(self):
-        cam = render.Camera()
+        cam = render.Camera(None) # dummy dungeon
         ani = render.CameraAnimation(cam)
 
         ani.startAhead(1)
@@ -119,7 +119,7 @@ class CameraAnimationTest(OpenGLTest):
 class CameraTest(OpenGLTest):
     
     def test_init(self):
-        c = render.Camera(2.5)
+        c = render.Camera(None, 2.5) # dummy dungeon
 
         self.assertAlmostEqual(c.scale, 2.5)  
         self.assertAlmostEqual(c.pos, (0.0, 0.0, 0.0))
@@ -130,13 +130,13 @@ class CameraTest(OpenGLTest):
         c.apply()
 
     def test_getLookNormal(self): 
-        c = render.Camera(2.5)
+        c = render.Camera(None, 2.5) # dummy dungeon
         normal = c.getLookNormal()
         self.assertEqual(normal[0], -1)
         self.assertEqual(normal[1],  0)
 
     def test_rotate(self):
-        c = render.Camera(2.5)
+        c = render.Camera(None, 2.5) # dummy dungeon
         prev = c.look
         c.rotate(45.0) 
         self.assertAlmostEqual(c.angle, 225.0) # base angle == 180
@@ -164,7 +164,7 @@ class CameraTest(OpenGLTest):
         c.apply()
 
     def test_moveTo(self):
-        c = render.Camera(2.5)
+        c = render.Camera(None, 2.5) # dummy dungeon
         c.moveTo(1.2, 3.4, 5.6)
 
         self.assertAlmostEqual(c.pos[0], 1.2*2.5)
@@ -176,7 +176,7 @@ class CameraTest(OpenGLTest):
 
     def test_move(self):
         # move ahead
-        c = render.Camera(2.5)
+        c = render.Camera(None, 2.5) # dummy dungeon
         c.moveTo(1.2, 3.4, 5.6)
         c.move(0.5, ahead=True)
         
@@ -188,7 +188,7 @@ class CameraTest(OpenGLTest):
         c.apply()
         
         # rotate 90° to the right and move ahead
-        c = render.Camera(2.5)
+        c = render.Camera(None, 2.5) # dummy dungeon
         c.moveTo(1.2, 3.4, 5.6)
         c.rotate(90.0)
         self.assertAlmostEqual(c.look[0], -1.0)
@@ -203,7 +203,7 @@ class CameraTest(OpenGLTest):
         c.apply()
 
         # move sideways
-        c = render.Camera(2.5)
+        c = render.Camera(None, 2.5) # dummy dungeon
         c.moveTo(1.2, 3.4, 5.6)
         c.move(0.5, ahead=False)
         
@@ -212,7 +212,7 @@ class CameraTest(OpenGLTest):
         self.assertAlmostEqual(c.pos[2], 5.6*2.5)
         
         # rotate 90° to the right and move sideways
-        c = render.Camera(2.5)
+        c = render.Camera(None, 2.5) # dummy dungeon
         c.moveTo(1.2, 3.4, 5.6)
         c.rotate(90.0)          
         self.assertAlmostEqual(c.look[0], -1.0)
@@ -227,7 +227,7 @@ class CameraTest(OpenGLTest):
         c.apply()
 
     def test_moveUp(self):
-        c = render.Camera(2.5)
+        c = render.Camera(None, 2.5) # dummy dungeon
         c.moveTo(1.2, 3.4, 5.6)
         c.moveUp(7.8)
 
@@ -256,13 +256,13 @@ class CameraTest(OpenGLTest):
             return data
 
         # nothing happens on idle
-        c = render.Camera(2.5)
+        c = render.Camera(None, 2.5) # dummy dungeon
         c.update(pygame.key.get_pressed())
         self.assertTrue(c.animation.isIdle())
 
         # test moving 
         for key in move_keys:
-            c = render.Camera(2.5)
+            c = render.Camera(None, 2.5) # dummy dungeon
             c.update(buildKeyMap(key))
             self.assertEqual(c.animation.handle, c.move)
             args = c.animation.args
@@ -281,7 +281,7 @@ class CameraTest(OpenGLTest):
 
         # test rotating
         for key in rotate_keys:
-            c = render.Camera(2.5)
+            c = render.Camera(None, 2.5) # dummy dungeon
             c.update(buildKeyMap(key))
             self.assertEqual(c.animation.handle, c.rotate)
             args = c.animation.args

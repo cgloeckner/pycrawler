@@ -34,6 +34,7 @@ class Renderer(object):
     def loadDungeon(self, dungeon):
         self.cam = render.Camera(dungeon, 3.0)
         self.cam.moveTo(1.5, 0.175, 1.5)
+        #self.cam.no_collision = True
 
     def ortho(self):
         gl.glMatrixMode(gl.GL_PROJECTION)
@@ -52,11 +53,6 @@ class Renderer(object):
         gl.glLoadIdentity()
         glu.gluPerspective(45, self.aspect_ratio, 0.1, 30.0)
         self.cam.apply()
-
-        gl.glMatrixMode(gl.GL_TEXTURE)
-        gl.glLoadIdentity()
-        # @NOTE: invert y-coordinates, else textures are upside down
-        gl.glScalef(1.0, -1.0, 1.0);
         
         gl.glMatrixMode(gl.GL_MODELVIEW)
         gl.glLoadIdentity()         
@@ -64,9 +60,15 @@ class Renderer(object):
 
     def clear(self):
         gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
+        
+        gl.glMatrixMode(gl.GL_TEXTURE)
+        gl.glLoadIdentity()
+        # invert y-coordinates to flip texture with (0,0) as topleft
+        gl.glScalef(1.0, -1.0, 1.0) 
 
     def update(self):
         pygame.display.flip()
+
 
 
 
@@ -77,7 +79,7 @@ if __name__ == '__main__':
     pygame.init()
     renderer = Renderer(640, 480) 
     running  = True
-
+    
     fpsclock = pygame.time.Clock()
 
     tileset = draw.Texture()
@@ -85,6 +87,9 @@ if __name__ == '__main__':
 
     heart = draw.Texture()
     heart.loadFromFile('heart.png')
+
+    potion = draw.Texture()
+    potion.loadFromFile('potion.png')
     
     #minimap = createMinimap(tileset, d, 16)
 
@@ -99,9 +104,22 @@ if __name__ == '__main__':
     renderer.loadDungeon(d)
 
     vb = dungeon.VertexBuilder()
+    #vb.no_walls()
     vb.loadFromDungeon(d)
 
     next_fps_update = 0
+
+    sprite1 = draw.Sprite3D()
+    sprite1.resize(0.5, 0.5)
+    sprite1.moveTo(4.5, 0.0, 4.5)
+    sprite1.centerTo(0.5, 0.0, 0.5)
+    sprite1.texture = potion
+    
+    sprite2 = draw.Sprite3D()
+    sprite2.resize(0.5, 0.5)
+    sprite2.moveTo(5.0, 0.0, 4.0)
+    sprite2.centerTo(0.5, 0.0, 0.5)
+    sprite2.texture = potion
     
     while running:
         for event in pygame.event.get():
@@ -116,8 +134,9 @@ if __name__ == '__main__':
         hud.render()
 
         renderer.perspective()
+        
+        # draw terrain
         tileset.bind()
-
         gl.glBegin(gl.GL_QUADS)
         for v, t, c in vb.data:
             for i in range(4):
@@ -125,7 +144,13 @@ if __name__ == '__main__':
                 gl.glTexCoord2fv(t[i])
                 gl.glVertex3fv(v[i])
         gl.glEnd()
-
+                          
+        sprite1.rotate = renderer.cam.angle
+        sprite2.rotate = renderer.cam.angle
+        
+        sprite1.render()
+        sprite2.render()
+        
         #screen.blit(minimap, (50, 50))
         renderer.update()
         fpsclock.tick(60)

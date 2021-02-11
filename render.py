@@ -55,6 +55,8 @@ class Camera(object):
         self.angle = 180.0
 
         self.animation = CameraAnimation(self)
+
+        self.no_collision = False
     
     def getLookNormal(self):
         # calculate normal vector of looking direction within xz-plane
@@ -117,28 +119,28 @@ class Camera(object):
             if keys[pygame.K_w]:
                 # test if walkable
                 pos = self.getWorldPos(step=1, ahead=True)
-                if self.dungeon[pos].isWalkable():
+                if self.dungeon[pos].isWalkable() or self.no_collision:
                     # trigger movement
                     self.animation.startAhead(1)
                 
             elif keys[pygame.K_s]:
                 # test if walkable
                 pos = self.getWorldPos(step=-1, ahead=True)
-                if self.dungeon[pos].isWalkable(): 
+                if self.dungeon[pos].isWalkable() or self.no_collision: 
                     # trigger movement
                     self.animation.startAhead(-1)
                 
             elif keys[pygame.K_a]:
                 # test if walkable
                 pos = self.getWorldPos(step=-1, ahead=False)
-                if self.dungeon[pos].isWalkable():
+                if self.dungeon[pos].isWalkable() or self.no_collision:
                     # trigger movement
                     self.animation.startSideways(-1)
                 
             elif keys[pygame.K_d]:  
                 # test if walkable
                 pos = self.getWorldPos(step=1, ahead=False)
-                if self.dungeon[pos].isWalkable(): 
+                if self.dungeon[pos].isWalkable() or self.no_collision: 
                     # trigger movement
                     self.animation.startSideways(1)
                 

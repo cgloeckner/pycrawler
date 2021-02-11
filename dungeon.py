@@ -12,6 +12,14 @@ class VertexBuilder(object):
     def __init__(self):
         self.data = list()
 
+    def no_walls(self):
+        # monkeypatch to replace walls with empty vertices
+        zero_quad  = tuple([(0.0, 0.0, 0.0)] * 4)
+        zero_tex   = tuple([(0.0, 0.0)] * 4)
+        zero_color = tuple([(1.0, 1.0, 1.0)] * 4)
+        self.northWall = lambda x, y, z, w, h: (zero_quad, zero_tex, zero_color)
+        self.westWall = lambda x, y, z, w, h: (zero_quad, zero_tex, zero_color)
+
     def floor(self, x: int, y: int, z: int, w: float, h: float) -> tuple: 
         # build vertices "on the ground"
         tl = (x*w + 0.0, z*h, y*w + 0.0)
@@ -146,6 +154,8 @@ class Cell(object):
         self.pos      = (x, y)
         self.symbol   = symbol
         self.vertices = list()
+
+        self.content = list()
     
     @staticmethod
     def Void(*args, **kwargs):

@@ -107,9 +107,9 @@ class VertexBuilderTest(unittest.TestCase):
     def test_build(self):
         # load test dungeon
         raw = '''3x3
-#.#
-. #
-# #'''
+# #
+ .#
+#.#'''
         d = dungeon.Dungeon()
         self.assertTrue(d.loadFromMemory(raw))
 
@@ -123,7 +123,7 @@ class VertexBuilderTest(unittest.TestCase):
         
         # build dungeon
         self.assertTrue(vb.loadFromDungeon(d))
-        for a, b, c in vb.data:
+        for a, b, c in vb.data: # only show in case of an error
             print(a, "\t", b, "\t", c)
         self.assertEqual(len(vb.data), 20)
         black = (0.0, 0.0, 0.0)
@@ -207,9 +207,9 @@ class CellTest(unittest.TestCase):
     def test_getNeighbor(self):
         # load test dungeon
         raw = '''3x3
-#.#
-. #
-# #'''
+# #
+ .#
+#.#'''
         d = dungeon.Dungeon()
         self.assertTrue(d.loadFromMemory(raw))
 

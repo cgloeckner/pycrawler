@@ -103,7 +103,6 @@ class Sprite2D(object):
     def render(self):
         gl.glPushMatrix()
         gl.glLoadIdentity()
-        
         self.transform()
 
         if self.texture is not None:
@@ -119,4 +118,35 @@ class Sprite2D(object):
         gl.glEnd()
         
         gl.glPopMatrix()
+
+
+# ---------------------------------------------------------------------
+
+class Sprite3D(Sprite2D):
+    def __init__(self, w=1.0, h=1.0):
+        super().__init__(w, h)
+        self.z = 0
+
+        self.rotate = 0.0
+
+    def moveTo(self, x, y, z):
+        super().moveTo(x, y)
+        self.z = z
+
+    def moveBy(self, dx, dy, dz):
+        super().moveBy(dx, dy)
+        self.z += dz
+          
+    def centerTo(self, relx, rely, relz):
+        self.origin = (relx, rely, relz)
+    
+    def transform(self):
+        # WORKAROUND: else the textures are re-flipped (idk why)
+        gl.glMatrixMode(gl.GL_TEXTURE)
+        gl.glLoadIdentity()
+
+        gl.glMatrixMode(gl.GL_MODELVIEW)
+        gl.glTranslate(self.x - self.origin[0] * self.w, self.y - self.origin[1] * self.h, self.z - self.origin[1] * self.w)
+        gl.glRotate(self.rotate, 0.0, 1.0, 0.0)
+        
 

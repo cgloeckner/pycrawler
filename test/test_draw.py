@@ -136,7 +136,13 @@ class Sprite2DTest(OpenGLTest):
         # rendering does not crash (even without a texture)
         self.ortho()
         s.render()
-
+    
+    def test_centerTo(self):
+        s = draw.Sprite2D()
+        s.centerTo(0.5, 0.5)
+        self.assertEqual(s.origin, (0.5, 0.5))
+        # @NOTE: the rest is done by .transform() within OpenGL
+    
     def test_render(self):
         t = draw.Texture()
 
@@ -154,3 +160,44 @@ class Sprite2DTest(OpenGLTest):
         # rendering does not crash 
         self.ortho()
         s.render()
+
+
+# ---------------------------------------------------------------------
+
+class Sprite3DTest(OpenGLTest):
+
+    def test_ctor(self):
+        s = draw.Sprite3D()
+        self.assertEqual(s.z, 0)
+
+        # rendering does not crash
+        self.perspective()
+        s.render()
+
+    def test_moveTo(self):
+        s = draw.Sprite3D()
+        s.moveTo(400, 300, 250) 
+        self.assertEqual(s.z, 250)
+         
+        # rendering does not crash
+        self.perspective()
+        s.render()
+
+    def test_moveBy(self):
+        s = draw.Sprite3D()
+        s.moveBy(400, 300, 250)
+        s.moveBy(-200, -180, 50)
+        self.assertEqual(s.x, 200)
+        self.assertEqual(s.y, 120)
+        self.assertEqual(s.z, 300)
+         
+        # rendering does not crash
+        self.perspective()
+        s.render()
+
+    def test_centerTo(self):
+        s = draw.Sprite3D()
+        s.centerTo(0.5, 0.5, 0.5)
+        self.assertEqual(s.origin, (0.5, 0.5, 0.5))
+        # @NOTE: the rest is done by .transform() within OpenGL
+    
