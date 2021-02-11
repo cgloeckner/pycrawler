@@ -44,6 +44,10 @@ class Renderer(object):
         gl.glMatrixMode(gl.GL_PROJECTION)
         gl.glLoadIdentity()
         gl.glOrtho(0.0, self.resolution[0], self.resolution[1], 0.0, -0.01, 10.0)
+
+        # @NOTE: this reverts the workaround inside perspective()
+        gl.glMatrixMode(gl.GL_TEXTURE)
+        gl.glLoadIdentity()
         
         gl.glMatrixMode(gl.GL_MODELVIEW)
         gl.glLoadIdentity()
@@ -57,6 +61,11 @@ class Renderer(object):
         gl.glLoadIdentity()
         glu.gluPerspective(45, self.aspect_ratio, 0.1, 30.0)
         self.cam.apply()
+
+        # @WORKAROUND: this y-flips all texture to be shown correctly.
+        gl.glMatrixMode(gl.GL_TEXTURE)
+        gl.glLoadIdentity()
+        gl.glScale(1.0, -1.0, 1.0) 
         
         gl.glMatrixMode(gl.GL_MODELVIEW)
         gl.glLoadIdentity()         
@@ -64,11 +73,6 @@ class Renderer(object):
 
     def clear(self):
         gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
-        
-        gl.glMatrixMode(gl.GL_TEXTURE)
-        gl.glLoadIdentity()
-        # invert y-coordinates to flip texture with (0,0) as topleft
-        gl.glScalef(1.0, -1.0, 1.0) 
 
     def update(self):
         pygame.display.flip()

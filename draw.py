@@ -91,10 +91,10 @@ class Sprite2D(object):
     def clip(self, left, top, w, h):
         self.texrect = (left, top, w, h)
         # rebuild texture coordinates
-        tl = (left,     top)
-        tr = (left + w, top)
-        br = (left + w, top + h)
-        bl = (left    , top + h)
+        tl = (left    , top + h)
+        tr = (left + w, top + h)
+        br = (left + w, top)
+        bl = (left,     top)
         self.texcoords = (tl, tr, br, bl)
 
     def transform(self):
@@ -136,16 +136,11 @@ class Sprite3D(Sprite2D):
     def moveBy(self, dx, dy, dz):
         super().moveBy(dx, dy)
         self.z += dz
-          
+    
     def centerTo(self, relx, rely, relz):
         self.origin = (relx, rely, relz)
     
     def transform(self):
-        # WORKAROUND: else the textures are re-flipped (idk why)
-        gl.glMatrixMode(gl.GL_TEXTURE)
-        gl.glLoadIdentity()
-
-        gl.glMatrixMode(gl.GL_MODELVIEW)
         gl.glTranslate(self.x - self.origin[0] * self.w, self.y - self.origin[1] * self.h, self.z - self.origin[1] * self.w)
         gl.glRotate(self.rotate, 0.0, 1.0, 0.0)
         
