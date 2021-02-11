@@ -186,6 +186,24 @@ class CellTest(unittest.TestCase):
         self.assertFalse(floor_cell.isWall())
         self.assertTrue(floor_cell.isFloor())
 
+    def test_isWalkable(self):
+        void_cell  = dungeon.Cell.Void(x=0, y=4)
+        wall_cell  = dungeon.Cell.Wall(x=1, y=5)
+        floor_cell = dungeon.Cell.Floor(x=2, y=6)
+
+        self.assertTrue(void_cell.isWalkable()) # player may fall
+        self.assertFalse(wall_cell.isWalkable())
+        self.assertTrue(floor_cell.isWalkable())
+        
+    def test_isSolid(self):
+        void_cell  = dungeon.Cell.Void(x=0, y=4)
+        wall_cell  = dungeon.Cell.Wall(x=1, y=5)
+        floor_cell = dungeon.Cell.Floor(x=2, y=6)
+
+        self.assertFalse(void_cell.isSolid())
+        self.assertTrue(wall_cell.isSolid())
+        self.assertTrue(floor_cell.isSolid())
+
     def test_getNeighbor(self):
         # load test dungeon
         raw = '''3x3

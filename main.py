@@ -29,8 +29,10 @@ class Renderer(object):
     def __init__(self, w, h):
         self.resolution = (w, h)
         self.screen     = pygame.display.set_mode((w, h), pygame.DOUBLEBUF | pygame.OPENGL | pygame.OPENGLBLIT)
+        self.cam        = None
 
-        self.cam = render.Camera(3.0)
+    def loadDungeon(self, dungeon):
+        self.cam = render.Camera(dungeon, 3.0)
         self.cam.moveTo(1.5, 0.175, 1.5)
 
     def ortho(self):
@@ -42,6 +44,8 @@ class Renderer(object):
         gl.glLoadIdentity()
 
     def perspective(self):
+        assert(self.cam is not None)
+        
         self.aspect_ratio = self.resolution[0] / self.resolution[1]
         
         gl.glMatrixMode(gl.GL_PROJECTION)
@@ -92,6 +96,7 @@ if __name__ == '__main__':
     # demo terrain
     d = dungeon.Dungeon()
     d.loadFromFile('demo.txt')
+    renderer.loadDungeon(d)
 
     vb = dungeon.VertexBuilder()
     vb.loadFromDungeon(d)

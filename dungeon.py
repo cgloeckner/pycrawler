@@ -149,7 +149,7 @@ class Cell(object):
     
     @staticmethod
     def Void(*args, **kwargs):
-        kwargs['symbol'] = '.'
+        kwargs['symbol'] = ' '
         return Cell(*args, **kwargs)
     
     @staticmethod
@@ -159,18 +159,26 @@ class Cell(object):
 
     @staticmethod
     def Floor(*args, **kwargs):
-        kwargs['symbol'] = ' '
+        kwargs['symbol'] = '.'
         return Cell(*args, **kwargs)
 
     def isVoid(self) -> bool:
-        return self.symbol == '.'
+        return self.symbol == ' '
 
     def isWall(self) -> bool:
         return self.symbol == '#'
 
     def isFloor(self) -> bool:
-        return self.symbol == ' '
+        return self.symbol == '.'
+    
+    def isWalkable(self) -> bool:
+        # @NOTE: e.g. a door is not walkable as long as closed
+        return self.isFloor() or self.isVoid()
 
+    def isSolid(self) -> bool:
+        # @NOTE: e.g. floor or a metal grate are "solid"
+        return not self.isVoid()
+    
     def getNeighbor(self, parent_dungeon, direction: tuple):
         """ Returns neighbor cell inside parent_dungeon in the given
         direciton.

@@ -43,11 +43,13 @@ class CameraAnimation(object):
 # ---------------------------------------------------------------------
 
 class Camera(object):
-    def __init__(self, scale=1.0):
+    def __init__(self, dungeon, scale=1.0):
         """ `scale` refers to tilesize (e.g. if 3.0 is one tile), so
         all positions can be in world scale.
-        """
+        """               
+        self.dungeon = dungeon
         self.scale = scale
+        
         self.moveTo(0.0, 0.0, 0.0)
         self.look  = (0.0, 1.0)
         self.angle = 180.0
@@ -93,22 +95,52 @@ class Camera(object):
     def apply(self):
         gl.glRotate(self.angle, 0.0, 1.0, 0.0)
         gl.glTranslate(-self.pos[0], -self.pos[1], -self.pos[2])
+
+    def getWorldPos(self, step=0, ahead=True):
+        # get position in world scale
+        x, _, y = self.pos
+        x /= self.scale
+        y /= self.scale
+        if step != 0:
+            # move in given direction
+            into = self.look if ahead else self.getLookNormal()
+            if step < 0:
+                into = (-into[0], -into[1])
+            x += into[0]
+            y += into[1]
+        return (int(x), int(y))
     
     def update(self, keys):
         """ Handle input key input
         """
         if self.animation.isIdle():
             if keys[pygame.K_w]:
-                self.animation.startAhead(1)
+                # test if walkable
+                pos = self.getWorldPos(step=1, ahead=True)
+                if self.dungeon[pos].isWalkable():
+                    # trigger movement
+                    self.animation.startAhead(1)
                 
             elif keys[pygame.K_s]:
-                self.animation.startAhead(-1)
+                # test if walkable
+                pos = self.getWorldPos(step=-1, ahead=True)
+                if self.dungeon[pos].isWalkable(): 
+                    # trigger movement
+                    self.animation.startAhead(-1)
                 
             elif keys[pygame.K_a]:
-                self.animation.startSideways(-1)
+                # test if walkable
+                pos = self.getWorldPos(step=-1, ahead=False)
+                if self.dungeon[pos].isWalkable():
+                    # trigger movement
+                    self.animation.startSideways(-1)
                 
             elif keys[pygame.K_d]:  
-                self.animation.startSideways(1)
+                # test if walkable
+                pos = self.getWorldPos(step=1, ahead=False)
+                if self.dungeon[pos].isWalkable(): 
+                    # trigger movement
+                    self.animation.startSideways(1)
                 
             elif keys[pygame.K_q]:
                 self.animation.startRotate(-1)
