@@ -173,41 +173,6 @@ class Cell(object):
         y = self.pos[1] + direction[1]
         return parent_dungeon[(x, y)]
 
-    """
-    def needsWall(self, parent_dungeon, direction: tuple) -> bool:
-        #"" Determines whether this tile needs a wall in the given
-        #direction, which means the neighbor tile is a wall or out of
-        #map position.
-        #""
-        x = self.pos[0] + direction[0]
-        y = self.pos[1] + direction[1]
-        neighbor = parent_dungeon[(x, y)]
-        return neighbor is None or neighbor.isWall()
-
-    def needsNorthWall(self, parent_dungeon) -> bool:
-        if self.isWall():
-            # wall tiles do not trigger more walls
-            return False
-        return self.needsWall(parent_dungeon, (0, -1))
-        
-    def needsSouthWall(self, parent_dungeon) -> bool:
-        if self.isWall():
-            # wall tiles do not trigger more walls
-            return False
-        return self.needsWall(parent_dungeon, (0, 1))
-    
-    def needsEastWall(self, parent_dungeon) -> bool:
-        if self.isWall():
-            # wall tiles do not trigger more walls
-            return False
-        return self.needsWall(parent_dungeon, (1, 0))
-        
-    def needsWestWall(self, parent_dungeon) -> bool:
-        if self.isWall():
-            # wall tiles do not trigger more walls
-            return False
-        return self.needsWall(parent_dungeon, (-1, 0))
-    """
 
 # --------------------------------------------------------------------- 
 

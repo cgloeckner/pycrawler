@@ -7,7 +7,7 @@ import OpenGL.GLU as glu
 
 import dungeon, draw
 
-
+"""
 def createMinimap(tileset, dungeon, tile_size):
     minimap = pygame.Surface((dungeon.size[0] * tile_size, dungeon.size[1] * tile_size))
     for y in range(dungeon.size[1]):
@@ -21,6 +21,62 @@ def createMinimap(tileset, dungeon, tile_size):
             dst = pygame.Rect(cell.pos[0] * tile_size, cell.pos[1] * tile_size, tile_size, tile_size)
             minimap.blit(tileset, dst, src)
     return minimap
+"""
+
+import math
+
+class Camera(object):
+    def __init__(self):
+        self.moveTo(0.0, 0.0, 0.0)
+        self.look = (0.0, 1.0)
+        self.angle = 0.0
+
+    def moveTo(self, x: float, y: float, z: float):
+        self.pos = (x, y, z)
+
+    def rotate(self, angle):
+        """ Rotate around y-axis.
+        """    
+        radians = angle * math.pi / 180.0
+        cosalph = math.cos(radians)
+        sinalph = math.sin(radians)
+        x, z = self.look
+        x = x * cosalph - z * sinalph
+        z = x * sinalph + z * cosalph
+        self.look = (x, z)
+        self.angle += angle
+
+    def moveAhead(self, distance):
+        x, y, z = self.pos
+        x += distance * self.look[0]
+        z += distance * self.look[1]
+        self.pos = (x, y, z)
+
+    def moveSideways(self, distance):
+        # calculate normal vector of looking direction within xz-plane
+        # x = x * cos(90°) - y * sin(90°)
+        # y = x * sin(90°) + y * cos(90°)
+        normal_x = -self.look[1]
+        normal_z =  self.look[0]
+
+        # alter position       
+        x, y, z = self.pos
+        x += distance * normal_x
+        z += distance * normal_z  
+        self.pos = (x, y, z)
+
+    def moveUp(self, distance):
+        x, y, z = self.pos
+        y += distance
+        self.pos = (x, y, z)
+
+    def __call__(self):
+        """ Apply camera.
+        """
+        gl.glRotate(self.angle, 0.0, 1.0, 0.0)
+        gl.glTranslate(*self.pos)
+        
+        
 
 
 class Renderer(object):
@@ -28,9 +84,8 @@ class Renderer(object):
         self.resolution = (w, h)
         self.screen     = pygame.display.set_mode((w, h), pygame.DOUBLEBUF | pygame.OPENGL | pygame.OPENGLBLIT)
 
-        self.x = 0.0
-        self.y = -1.0
-        self.z = -5.0
+        self.cam = Camera()
+        self.cam.moveTo(0.0, -1.0, -5.0)
 
     def ortho(self):
         gl.glMatrixMode(gl.GL_PROJECTION)
@@ -42,11 +97,11 @@ class Renderer(object):
 
     def perspective(self):
         self.aspect_ratio = self.resolution[0] / self.resolution[1]
-                           
+        
         gl.glMatrixMode(gl.GL_PROJECTION)
         gl.glLoadIdentity()
         glu.gluPerspective(45, self.aspect_ratio, 0.1, 30.0)
-        gl.glTranslatef(self.x, self.y, self.z)
+        self.cam()
 
         gl.glMatrixMode(gl.GL_TEXTURE)
         gl.glLoadIdentity()
@@ -63,31 +118,6 @@ class Renderer(object):
     def update(self):
         pygame.display.flip()
 
-
-"""
-class VertexArray(object):
-    def __init__(self):
-        super().__init__(self)
-        self.data   = list()
-        self.buffer = gl.glGenBuffers(1)
-        gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.buffer)
-
-    def __call__(self):
-        array_type = (gl.GLfloat * len(self.data))
-        gl.glBufferData(gl.GL_ARRAY_BUFFER, len(self.data) * sizeOfFloat,
-            array_type(*self.data), gl.GL_STATIC_DRAW
-        )
-        gl.glBindBuffer(gl.GL_ARRAY_BUFFER, 0)
-
-    def render(self):
-        gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.buffer)
-        gl.gnEnableVertexAttributArray(0)
-        gl.glVertexAttribPointer(0, self.data, gl.GL_FLOAT, False, 0, null)
-
-        gl.glDrawAwways(gl.GL_QUADS, 0, len(self.data) / vertexComponents)#????
-
-        gl.glDisableVertexAttribArray(0)
-"""        
 
 
 # ---------------------------------------------------------------------
@@ -129,17 +159,19 @@ if __name__ == '__main__':
 
         key_input = pygame.key.get_pressed()
         if key_input[pygame.K_w]:
-            renderer.z += 0.1
+            renderer.cam.moveAhead(0.15)
         if key_input[pygame.K_s]:
-            renderer.z -= 0.1
+            renderer.cam.moveAhead(-0.15)
         if key_input[pygame.K_a]:
-            renderer.x += 0.1
+            renderer.cam.moveSideways(-0.15)
         if key_input[pygame.K_d]:
-            renderer.x -= 0.1
+            renderer.cam.moveSideways(0.15)
         if key_input[pygame.K_q]:
-            renderer.y -= 0.1
+            renderer.cam.rotate(-3.0)
+            #renderer.cam.moveUp(0.1)
         if key_input[pygame.K_e]:
-            renderer.y += 0.1
+            renderer.cam.rotate(3.0)
+            #renderer.cam.moveUp(-0.1)
 
         renderer.clear()
         
@@ -148,6 +180,7 @@ if __name__ == '__main__':
 
         renderer.perspective()
         tileset.bind()
+
         gl.glBegin(gl.GL_QUADS)
         for v, t, c in vb.data:
             for i in range(4):
