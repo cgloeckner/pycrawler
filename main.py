@@ -31,6 +31,10 @@ class Renderer(object):
         self.screen     = pygame.display.set_mode((w, h), pygame.DOUBLEBUF | pygame.OPENGL | pygame.OPENGLBLIT)
         self.cam        = None
 
+        # enable alpha from RGBA texture
+        gl.glEnable(gl.GL_ALPHA_TEST)
+        gl.glAlphaFunc(gl.GL_NOTEQUAL, 0.0)
+
     def loadDungeon(self, dungeon):
         self.cam = render.Camera(dungeon, 3.0)
         self.cam.moveTo(1.5, 0.175, 1.5)
@@ -144,7 +148,7 @@ if __name__ == '__main__':
                 gl.glTexCoord2fv(t[i])
                 gl.glVertex3fv(v[i])
         gl.glEnd()
-                          
+        
         sprite1.rotate = renderer.cam.angle
         sprite2.rotate = renderer.cam.angle
         
