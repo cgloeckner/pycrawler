@@ -81,7 +81,7 @@ class Renderer(object):
 
 
 # ---------------------------------------------------------------------
-           
+
 
 if __name__ == '__main__':
     pygame.init()
@@ -96,8 +96,14 @@ if __name__ == '__main__':
     heart = draw.Texture()
     heart.loadFromFile('heart.png')
 
-    potion = draw.Texture()
-    potion.loadFromFile('potion.png')
+    bag = draw.Texture()
+    bag.loadFromFile('bag.png')
+
+    goblin = draw.Texture()
+    goblin.loadFromFile('goblin.png')
+
+    sword = draw.Texture()
+    sword.loadFromFile('sword.png')
     
     #minimap = createMinimap(tileset, d, 16)
 
@@ -105,6 +111,14 @@ if __name__ == '__main__':
     hud.moveTo(640, 480)
     hud.centerTo(1.0, 1.0)
     hud.texture = heart
+
+    weapon = draw.Sprite2D(196, 196)
+    weapon.moveTo(420, 510)
+    weapon.centerTo(0.5, 1.0)
+    weapon.clip(0.0, 0.0, 0.25, 1.0)
+    weapon.texture = sword
+
+    weapon.animator = draw.FrameAnimator(weapon, 4, 8)
 
     # demo terrain
     d = dungeon.Dungeon()
@@ -118,28 +132,39 @@ if __name__ == '__main__':
     next_fps_update = 0
 
     sprite1 = draw.Sprite3D()
-    sprite1.resize(0.5, 0.5)
     sprite1.moveTo(4.5, 0.0, 4.5)
     sprite1.centerTo(0.5, 0.0, 0.5)
-    sprite1.texture = potion
+    sprite1.texture = goblin
     
-    sprite2 = draw.Sprite3D()
+    sprite2 = draw.Sprite3D()  
     sprite2.resize(0.5, 0.5)
     sprite2.moveTo(5.0, 0.0, 4.0)
     sprite2.centerTo(0.5, 0.0, 0.5)
-    sprite2.texture = potion
+    sprite2.texture = bag
+
+    sprite3 = draw.Sprite3D()
+    sprite3.moveTo(4.0, 0.0, 4.0)
+    sprite3.centerTo(0.5, 0.0, 0.5)
+    sprite3.texture = goblin
     
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                pressed = pygame.mouse.get_pressed()
+                if pressed[0] and weapon.animator.isIdle():
+                    weapon.animator.start()
 
         renderer.cam.update(pygame.key.get_pressed())
 
         renderer.clear()
+
+        weapon.animator()
         
         renderer.ortho()
         hud.render()
+        weapon.render()
 
         renderer.perspective()
         
@@ -155,9 +180,11 @@ if __name__ == '__main__':
         
         sprite1.rotate = renderer.cam.angle
         sprite2.rotate = renderer.cam.angle
+        sprite3.rotate = renderer.cam.angle
         
         sprite1.render()
         sprite2.render()
+        sprite3.render()
         
         #screen.blit(minimap, (50, 50))
         renderer.update()

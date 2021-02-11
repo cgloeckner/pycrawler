@@ -38,6 +38,45 @@ class Texture(object):
 
 # ---------------------------------------------------------------------
 
+class FrameAnimator(object):
+    def __init__(self, parent, num_frames, num_ticks):
+        self.parent     = parent
+        self.num_frames = num_frames
+        self.num_ticks  = num_ticks
+        
+        self.current = 0
+        self.tick    = 0
+        self.running = False
+
+    def isIdle(self):
+        return not self.running
+
+    def start(self):
+        self.current = 0
+        self.tick    = 0
+        self.running = True
+        self.applyFrame() 
+
+    def applyFrame(self):
+        w = 1.0 / self.num_frames
+        x = self.current * w
+        self.parent.clip(x, 0.0, w, 1.0)
+
+    def __call__(self):
+        if self.isIdle():
+            return
+        
+        self.tick += 1
+        if self.tick >= self.num_ticks:
+            self.tick     = 0
+            self.current += 1
+            self.applyFrame()
+            if self.current >= self.num_frames:
+                self.running = False
+
+
+# ---------------------------------------------------------------------
+
 class Sprite2D(object):
     def __init__(self, w=1.0, h=1.0):
         self.x = 0
@@ -49,6 +88,8 @@ class Sprite2D(object):
         
         self.texture = None
         self.clip(0.0, 0.0, 1.0, 1.0)
+
+        self.animator = None
 
     def moveTo(self, x, y):
         self.x = x
