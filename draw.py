@@ -120,22 +120,3 @@ class Sprite2D(object):
         
         gl.glPopMatrix()
 
-
-# ---------------------------------------------------------------------
-
-class BaseTile(Sprite2D):
-    def __init__(self, w=1.0, h=1.0):
-        super().__init__(w, h)
-        self.z = 0
-
-    def moveTo(self, x, y, z):
-        super().moveBy(x, y)
-        self.z = z
-
-    def moveBy(self, dx, dy, dz):
-        super().moveBy(dx, dy)
-        self.z += dz
-    
-    def transform(self):                          
-        gl.glTranslate(self.x - self.w / 2, self.y, self.z - self.h / 2) 
-

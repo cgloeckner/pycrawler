@@ -3,15 +3,21 @@
 
 
 class VertexBuilder(object):
+    """ Builds dungeon tile vertices. (x, y) are relative to the flat
+    2D dungeon layout where as z indiciates the height. These are NOT
+    following the OpenGL coordinate system but allow for simpler
+    navigation on a dungeon level.
+    """
+    
     def __init__(self):
         self.data = list()
 
     def floor(self, x: int, y: int, z: int, w: float, h: float) -> tuple: 
         # build vertices "on the ground"
-        tl = (x*w + 0.0, 0.0, y*w + 0.0)
-        tr = (x*w +   w, 0.0, y*w + 0.0)
-        br = (x*w +   w, 0.0, y*w +   w)
-        bl = (x*w + 0.0, 0.0, y*w +   w)
+        tl = (x*w + 0.0, z*h, y*w + 0.0)
+        tr = (x*w +   w, z*h, y*w + 0.0)
+        br = (x*w +   w, z*h, y*w +   w)
+        bl = (x*w + 0.0, z*h, y*w +   w)
         vertices = (tl, tr, br, bl)
         # build texture coordinates
         tl = (0.0, 0.0)

@@ -12,13 +12,13 @@ class VertexBuilderTest(unittest.TestCase):
     def test_floor(self):
         vb = dungeon.VertexBuilder()
         
-        v, t, c = vb.floor(4, 5, 0, 3.0, 2.0)
+        v, t, c = vb.floor(4, 5, 6, 3.0, 2.0)
         self.assertEqual(len(v), 4)
         # square floor in xz-plane
-        self.assertEqual(v[0], (12.0, 0.0, 15.0))
-        self.assertEqual(v[1], (15.0, 0.0, 15.0))
-        self.assertEqual(v[2], (15.0, 0.0, 18.0))
-        self.assertEqual(v[3], (12.0, 0.0, 18.0))
+        self.assertEqual(v[0], (12.0, 12.0, 15.0))
+        self.assertEqual(v[1], (15.0, 12.0, 15.0))
+        self.assertEqual(v[2], (15.0, 12.0, 18.0))
+        self.assertEqual(v[3], (12.0, 12.0, 18.0))
         # texCoord for floor rect
         self.assertEqual(t[0], (0.0, 0.0))
         self.assertEqual(t[1], (1.0, 0.0))
